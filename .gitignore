@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-node_modules
-=======
 # Logs
 logs
 *.log
@@ -131,4 +128,3 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
->>>>>>> db31d499e534257aba324e245493ee7172351957
