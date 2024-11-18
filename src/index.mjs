@@ -1,16 +1,13 @@
-import { exec } from 'child_process'
-
 import ora from 'ora'
 import inquirer from 'inquirer'
 
 import axios from 'axios'
 import * as cheerio from 'cheerio'
-import puppeteer from 'puppeteer'
+// import puppeteer from 'puppeteer'
 // import playwright from 'playwright'
 
+import { originUrl, sendKeys } from './base.mjs'
 import sendList from './push_target/index.mjs'
-
-const originUrl = 'http://new.xianbao.fun'
 
 function fetchHTML(url) {
   try {
@@ -36,9 +33,6 @@ const articleItemClass = '.article-list'
 // const img = await page.screenshot({ path: 'screenshot.png' })
 // await browser.close()
 
-const sendKeys = {
-  飞书机器人: 'sendToBotForFeishu'
-}
 const send = list => {
   sendList[sendKeys['飞书机器人']](list)
 }
