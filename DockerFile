@@ -1,0 +1,9 @@
+FROM node:carbon
+
+WORKDIR /information_push
+
+RUN npm install -g pnpm nodemon
+
+RUN pnpm i
+
+CMD [ "nodemon", "src/index.mjs" ]
