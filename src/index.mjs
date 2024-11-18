@@ -1,3 +1,5 @@
+import { exec } from 'child_process'
+
 import ora from 'ora'
 import inquirer from 'inquirer'
 
@@ -6,7 +8,9 @@ import * as cheerio from 'cheerio'
 import puppeteer from 'puppeteer'
 // import playwright from 'playwright'
 
-const url = 'http://new.xianbao.fun'
+import sendList from './push_target/index.mjs'
+
+const originUrl = 'http://new.xianbao.fun'
 
 function fetchHTML(url) {
   try {
@@ -16,35 +20,36 @@ function fetchHTML(url) {
   }
 }
 
+// 主要内容 .mainbox 榜单 .bangdan
+// TODO: 对主要内容喝榜单做区分
+
+const mainClass = '.mainbox'
+const rankClass = '.bangdan'
 const sidebarId = '#sidebar'
-
 const newPostListClass = '.new-post'
-
 const articleItemClass = '.article-list'
 
 // const browser = await puppeteer.launch()
 // const page = await browser.newPage()
-
 // await page.goto(url)
-
-// // const sidebar = await page.locator(sidebarId)
-
+// const sidebar = await page.locator(sidebarId)
 // const img = await page.screenshot({ path: 'screenshot.png' })
-
-// console.log(img)
-
 // await browser.close()
-const getAttrList = ['href', 'title']
 
-const fieldToTextMap = {
-  href: '地址',
-  title: '标题'
+const sendKeys = {
+  飞书机器人: 'sendToBotForFeishu'
+}
+const send = list => {
+  sendList[sendKeys['飞书机器人']](list)
 }
 
-// TODO: 缓存旧的列表, 每次只显示新的数据
-const oldList = []
+let oldList = []
+const getAttrList = ['href', 'title']
 
-const func = url => {
+const filterOldList = list =>
+  list.filter(({ href }) => !oldList.some(i => i.href === href))
+
+const main = url => {
   fetchHTML(url).then(html => {
     const $ = cheerio.load(html)
 
@@ -54,6 +59,7 @@ const func = url => {
     const newPostList = $(newPostListSelector).children()
 
     if (newPostList.length) {
+      const list = []
       newPostList.each((_, element) => {
         element.children.forEach(item => {
           const listItemElement = item.children[item.children.length - 1]
@@ -64,33 +70,27 @@ const func = url => {
             obj[attrKey] = listItemElement.attribs[attrKey]
           })
 
-          oldList.push(obj)
+          list.push(obj)
         })
       })
+
+      const pushList = filterOldList(list)
+      if (pushList.length) {
+        oldList = [...oldList, ...pushList]
+        send(pushList)
+      }
     }
-
-    sendToBot(oldList)
   })
 }
 
-const botUrl = 'https://open.feishu.cn/open-apis/bot/v2/hook/585188bd-d07a-4f2d-8091-2b974d7d66c6'
+const startTask = () => {
+  // TODO: 随机刷新时间，防止检测
+  const refreshTimeList = [5000, 8000, 10000, 20000]
 
-const listToText = list => {
-  return list.map(({ href, title }) => `标题：${title} /n 地址：<a href=${url}${href}>点我跳转</a> /n`).join('/n')
+  main(originUrl)
+  setInterval(() => {
+    main(originUrl)
+  }, 10000)
 }
 
-const sendToBot = msgList => {
-  const text = listToText(msgList)
-  console.log(text)
-
-  const params = {
-    msg_type: 'text',
-    content: { text }
-  }
-
-  return axios.post(botUrl, params).then(res => {
-    console.log(res)
-  })
-}
-
-func(url)
+startTask()
