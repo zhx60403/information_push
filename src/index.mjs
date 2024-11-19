@@ -1,8 +1,8 @@
 import ora from 'ora'
-import inquirer from 'inquirer'
-
 import axios from 'axios'
+import inquirer from 'inquirer'
 import * as cheerio from 'cheerio'
+import cloneDeep from 'lodash/cloneDeep.js'
 // import puppeteer from 'puppeteer'
 // import playwright from 'playwright'
 
@@ -88,10 +88,7 @@ const main = () => {
     if (filterKeyword) pushList = filterListByKeyword(pushList)
 
     if (pushList.length) {
-      // console.log('# pushList ', pushList)
-      // console.log('# oldList ', oldList)
-
-      oldList = [...oldList, ...pushList]
+      oldList = [...oldList, ...cloneDeep(pushList)]
       isInited && send(pushList)
       isInited = true
     }
@@ -112,13 +109,13 @@ const taskOption = [
   {
     type: 'checkbox',
     name: 'choices',
-    message: '请选择一个推送平台',
+    message: '请选择一个推送平台：',
     choices: sendChoices
   },
   {
     type: 'input',
     name: 'keyword',
-    message: '请输入过滤关键字，多个关键字用 | 分开，例如：京东|淘宝|jd|tb|JD|TB',
+    message: '请输入过滤关键字，多个关键字用 | 分开，例如：京东|淘宝|拼多多，默认为空：',
     default: ''
   }
 ]
