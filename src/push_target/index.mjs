@@ -1,5 +1,6 @@
-import { send } from './feishu.mjs'
+import { send as sendToBotForFeishu } from './feishu.mjs'
+import { send as sendToSystemForBark } from './system_bark.mjs'
 
-const exportObj = { sendToBotForFeishu: send }
+const exportObj = { sendToBotForFeishu, sendToSystemForBark }
 
 export default exportObj

@@ -6,7 +6,7 @@ import * as cheerio from 'cheerio'
 // import puppeteer from 'puppeteer'
 // import playwright from 'playwright'
 
-import { originUrl, sendKeys } from './base.mjs'
+import { originUrl, sendChoices } from './base.mjs'
 import sendList from './push_target/index.mjs'
 
 function fetchHTML(url) {
@@ -18,7 +18,7 @@ function fetchHTML(url) {
 }
 
 // 主要内容 .mainbox 榜单 .bangdan
-// TODO: 对主要内容喝榜单做区分
+// TODO: 对主要内容和榜单做区分
 
 const mainClass = '.mainbox'
 const rankClass = '.bangdan'
@@ -33,8 +33,12 @@ const articleItemClass = '.article-list'
 // const img = await page.screenshot({ path: 'screenshot.png' })
 // await browser.close()
 
+let isInited = false
+let pushPlatform = []
 const send = list => {
-  sendList[sendKeys['飞书机器人']](list)
+  pushPlatform.forEach(key => {
+    sendList[key](list)
+  })
 }
 
 let oldList = []
@@ -43,10 +47,13 @@ const getAttrList = ['href', 'title']
 const filterOldList = list =>
   list.filter(({ href }) => !oldList.some(i => i.href === href))
 
-const main = url => {
+let filterKeyword = ''
+const filterListByKeyword = list =>
+  list.filter(({ title }) => title && filterKeyword.some(i => title.includes(i)))
+
+const getInformationOfPage = url =>
   fetchHTML(url).then(html => {
     const $ = cheerio.load(html)
-
     const newPostListSelector = `${newPostListClass}`
 
     // const newPostList = $(sidebarId).find(newPostListSelector).children()
@@ -56,23 +63,37 @@ const main = url => {
       const list = []
       newPostList.each((_, element) => {
         element.children.forEach(item => {
-          const listItemElement = item.children[item.children.length - 1]
+          if (Array.isArray(item.children) && item.children.length) {
+            const listItemElement = item.children[item.children.length - 1]
 
-          if (!listItemElement) return
-          const obj = {}
-          getAttrList.forEach(attrKey => {
-            obj[attrKey] = listItemElement.attribs[attrKey]
-          })
+            if (!listItemElement) return
+            const obj = {}
+            getAttrList.forEach(attrKey => {
+              const val = listItemElement?.attribs?.[attrKey]
+              if (val) obj[attrKey] = val
+            })
 
-          list.push(obj)
+            list.push(obj)
+          }
         })
       })
+      return list
+    }
+    return []
+  })
 
-      const pushList = filterOldList(list)
-      if (pushList.length) {
-        oldList = [...oldList, ...pushList]
-        send(pushList)
-      }
+const main = () => {
+  getInformationOfPage(originUrl).then(list => {
+    let pushList = filterOldList(list)
+    if (filterKeyword) pushList = filterListByKeyword(pushList)
+
+    if (pushList.length) {
+      // console.log('# pushList ', pushList)
+      // console.log('# oldList ', oldList)
+
+      oldList = [...oldList, ...pushList]
+      isInited && send(pushList)
+      isInited = true
     }
   })
 }
@@ -81,10 +102,33 @@ const startTask = () => {
   // TODO: 随机刷新时间，防止检测
   const refreshTimeList = [5000, 8000, 10000, 20000]
 
-  main(originUrl)
+  main()
   setInterval(() => {
-    main(originUrl)
+    main()
   }, 10000)
 }
 
-startTask()
+const taskOption = [
+  {
+    type: 'checkbox',
+    name: 'choices',
+    message: '请选择一个推送平台',
+    choices: sendChoices
+  },
+  {
+    type: 'input',
+    name: 'keyword',
+    message: '请输入过滤关键字，多个关键字用 | 分开，例如：京东|淘宝|jd|tb|JD|TB',
+    default: ''
+  }
+]
+
+const spinner = ora('推送任务运行中...')
+spinner.color = 'yellow'
+
+inquirer.prompt(taskOption).then(({ choices, keyword }) => {
+  pushPlatform = choices
+  filterKeyword = keyword.split('|')
+  spinner.start()
+  startTask()
+})

@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-import { originUrl } from './base.mjs'
+import { originUrl } from '../base.mjs'
 
 const botUrl =
   'https://open.feishu.cn/open-apis/bot/v2/hook/585188bd-d07a-4f2d-8091-2b974d7d66c6'
