@@ -59,6 +59,8 @@ const getInformationOfPage = url => {
       return list
     }
     return []
+  }).catch(({ code, status }) => {
+    console.error('# 获取页面错误', code, status)
   })
 }
 

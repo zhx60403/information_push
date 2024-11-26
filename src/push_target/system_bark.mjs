@@ -1,11 +1,11 @@
 import qs from 'qs'
 import axios from 'axios'
 
-import { originUrl } from '../base.mjs'
+import options from '../options.js'
+
+const { originUrl, barkKey } = options
 
 const pushUrl = 'https://api.day.app'
-
-const pushUrlKeys = ['p7RW9jDEKC9uiR7P6QrNtf', '7XcBeg8ouAEDy6UyW5NkfB']
 
 const defaultPushOptions = {
   level: 'passive',
@@ -22,7 +22,7 @@ const setupData = data => {
 const reqFunc = data => {
   const querys = { ...setupData(data), ...defaultPushOptions }
 
-  const arr = pushUrlKeys.map(key => {
+  const arr = barkKey.map(key => {
     const url = `${pushUrl}/${key}${qs.parse(querys, { addQueryPrefix: true })}`
 
     return axios.get(url).then(({ data }) => {

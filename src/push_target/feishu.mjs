@@ -1,9 +1,10 @@
 import axios from 'axios'
 
-import { originUrl } from '../base.mjs'
+import options from '../options.js'
 
-const botUrl =
-  'https://open.feishu.cn/open-apis/bot/v2/hook/585188bd-d07a-4f2d-8091-2b974d7d66c6'
+const { originUrl, feishuBotKey } = options
+
+const botUrl = `https://open.feishu.cn/open-apis/bot/v2/hook/${feishuBotKey}`
 
 const listToText = list => {
   return list
