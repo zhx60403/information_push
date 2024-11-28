@@ -46,5 +46,7 @@ export const send = msgList => {
   // console.log('# params ->', JSON.stringify(content))
   return axios.post(botUrl, params).then(({ data }) => {
     console.log('# push result ->', data)
+  }).catch(({ code, status }) => {
+    console.error('# 推送到飞书出现错误', code, status)
   })
 }
