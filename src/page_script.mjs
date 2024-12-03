@@ -5,11 +5,9 @@ import * as cheerio from 'cheerio'
 // import playwright from 'playwright'
 
 function fetchHTML(url) {
-  try {
-    return axios.get(url).then(({ data }) => data)
-  } catch (error) {
-    console.error(`无法获取 URL：${error}`)
-  }
+  return axios
+    .get(url)
+    .then(({ data }) => data)
 }
 
 // const browser = await puppeteer.launch()
@@ -31,37 +29,42 @@ const getInformationOfPage = url => {
 
   const getAttrList = ['href', 'title']
 
-  return fetchHTML(url).then(html => {
-    const $ = cheerio.load(html)
-    const newPostListSelector = `${newPostListClass}`
+  return fetchHTML(url)
+    .then(html => {
+      console.log('# html', html)
 
-    // const newPostList = $(sidebarId).find(newPostListSelector).children()
-    const newPostList = $(newPostListSelector).children()
+      const $ = cheerio.load(html)
+      const newPostListSelector = `${newPostListClass}`
 
-    if (newPostList.length) {
-      const list = []
-      newPostList.each((_, element) => {
-        element.children.forEach(item => {
-          if (Array.isArray(item.children) && item.children.length) {
-            const listItemElement = item.children[item.children.length - 1]
+      // const newPostList = $(sidebarId).find(newPostListSelector).children()
+      const newPostList = $(newPostListSelector).children()
 
-            if (!listItemElement) return
-            const obj = {}
-            getAttrList.forEach(attrKey => {
-              const val = listItemElement?.attribs?.[attrKey]
-              if (val) obj[attrKey] = val
-            })
+      if (newPostList.length) {
+        console.log('# newPostList', JSON.stringify(newPostList))
+        const list = []
+        newPostList.each((_, element) => {
+          element.children.forEach(item => {
+            if (Array.isArray(item.children) && item.children.length) {
+              const listItemElement = item.children[item.children.length - 1]
 
-            list.push(obj)
-          }
+              if (!listItemElement) return
+              const obj = {}
+              getAttrList.forEach(attrKey => {
+                const val = listItemElement?.attribs?.[attrKey]
+                if (val) obj[attrKey] = val
+              })
+
+              list.push(obj)
+            }
+          })
         })
-      })
-      return list
-    }
-    return []
-  }).catch(({ code, status }) => {
-    console.error('# 获取页面错误', code, status)
-  })
+        return list
+      }
+      return []
+    })
+    .catch(({ response: { status, statusText} }) => {
+      console.error('# 获取页面错误', statusText, status)
+    })
 }
 
 export default getInformationOfPage

@@ -30,7 +30,6 @@ const filterListByKeyword = list =>
 const main = () => {
   pageScript(originUrl).then(list => {
     if (!Array.isArray(list)) return
-    
     let pushList = filterOldList(list)
     if (filterKeyword) pushList = filterListByKeyword(pushList)
 
@@ -46,7 +45,6 @@ let refreshTime = null
 const startTask = () => {
   // TODO: 随机刷新时间，防止检测
   const refreshTimeList = [5000, 8000, 10000, 20000]
-
   main()
   setInterval(() => {
     main()
@@ -68,7 +66,7 @@ const taskOption = [
   },
   {
     type: 'input',
-    name: 'refreshTime',
+    name: 'time',
     message: '请输入刷新间隔，单位秒：',
     default: defaultRefreshTime
   }
@@ -77,10 +75,10 @@ const taskOption = [
 const spinner = ora('推送任务运行中...')
 spinner.color = 'yellow'
 
-inquirer.prompt(taskOption).then(({ choices, keyword, refreshTime }) => {
+inquirer.prompt(taskOption).then(({ choices, keyword, time }) => {
   pushPlatform = choices
   filterKeyword = keyword.split('|')
-  refreshTime = Number(refreshTime) * 1000
+  refreshTime = Number(time) * 1000
 
   spinner.start()
   startTask()
