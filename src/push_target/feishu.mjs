@@ -45,9 +45,9 @@ const listToCardData = list => ({
     type: 'template',
     data: {
       template_id: 'AAqjzST5WylIf',
-      template_version_name: '1.0.1',
-      card_header_title: '羊毛来啦~',
+      template_version_name: '1.0.2',
       template_variable: {
+        card_header_title: '羊毛来啦~',
         information_list: list.map(({ href, title: text }) => ({
           text,
           href: `${originUrl}${href}`
