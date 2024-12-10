@@ -31,8 +31,6 @@ const getInformationOfPage = url => {
 
   return fetchHTML(url)
     .then(html => {
-      console.log('# html', html)
-
       const $ = cheerio.load(html)
       const newPostListSelector = `${newPostListClass}`
 
@@ -40,7 +38,6 @@ const getInformationOfPage = url => {
       const newPostList = $(newPostListSelector).children()
 
       if (newPostList.length) {
-        console.log('# newPostList', JSON.stringify(newPostList))
         const list = []
         newPostList.each((_, element) => {
           element.children.forEach(item => {
@@ -62,8 +59,9 @@ const getInformationOfPage = url => {
       }
       return []
     })
-    .catch(({ response: { status, statusText} }) => {
-      console.error('# 获取页面错误', statusText, status)
+    .catch(err => {
+      console.log(err)
+      // console.error('# 获取页面错误', statusText, status)
     })
 }
 
